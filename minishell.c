@@ -34,8 +34,6 @@ static void	start_with_readline(t_shell *shell)
 	{"unset", handle_unset},
 	{"env", handle_env},
 	};
-
-	char *ext_args[] = {"mkdir", "1", NULL}; //qui passeremo come argomenti token1, token2, ecc
 	int is_builtin;
 
 	
@@ -99,17 +97,11 @@ static void	start_with_readline(t_shell *shell)
 		}
 		if (!is_builtin)
 		{
-			execute_external_command(ext_args);
+			char *ext_args[] = {shell->command, 0, NULL};
+			execute_external_command(ext_args, shell);
 			is_builtin = 0;
 			wait(NULL); //Attendo che il processo figlio completi l'esecuzione prima di tornare al prompt
 		}
-
-		/* if (!is_builtin) {
-            if (!strcmp(shell->command, "ls"))
-                execute_external_command(ext_args);
-            else if (!strcmp(shell->command, "cat"))
-                execute_external_command(ext_args_cat);
-        }*/
 	}
 //free(shell->input);
 }
