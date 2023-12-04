@@ -12,6 +12,77 @@
 
 #include "minishell.h"
 
+static char	*ft_substr(char const *s, unsigned int start, size_t len)
+{
+	char	*ptr;
+	size_t	index;
+
+	if (!s)
+		return (NULL);
+	if (start >= strlen(s))
+		start = strlen(s);
+	if ((start + len) >= strlen(s))
+		len = strlen(s) - start;
+	ptr = malloc(sizeof(char) * (len + 1));
+	if (!ptr)
+		return (NULL);
+	index = 0;
+	while (index != len)
+	{
+		ptr[index] = *(s + start + index);
+		index++;
+	}
+	ptr[index] = '\0';
+	return (ptr);
+}
+
+static size_t	get_word(const char *s, char c)
+{
+	size_t	words;
+
+	words = 0;
+	while (*s)
+	{
+		if (*s != c)
+		{
+			++words;
+			while (*s && *s != c)
+				++s;
+		}
+		else
+			++s;
+	}
+	return (words);
+}
+
+static char	**ft_split(const char *s, char c)
+{
+	char	**str;
+	size_t	i;
+	size_t	len;
+
+	if (!s)
+		return (0);
+	i = 0;
+	str = malloc(sizeof(char *) * (get_word(s, c) + 1));
+	if (!str)
+		return (0);
+	while (*s)
+	{
+		if (*s != c)
+		{
+			len = 0;
+			while (*s && *s != c && ++len)
+				++s;
+			str[i++] = ft_substr(s - len, 0, len);
+		}
+		else
+			++s;
+	}
+	str[i] = 0;
+	return (str);
+}
+
 void	handle_exit(char **args, int arg_nb, t_shell *shell)
 {
 	(void)args;
@@ -27,12 +98,12 @@ static void	start_with_readline(t_shell *shell)
 	int		i;
 	struct CommandFunction	commandFunctions[] = {
 	{"echo", handle_echo},
-	{"pwd", handle_pwd},
-	{"exit", handle_exit},
+	//{"pwd", handle_pwd},
+	//{"exit", handle_exit},
 	{"cd", handle_cd},
-	{"export", handle_export},
-	{"unset", handle_unset},
-	{"env", handle_env},
+	//{"export", handle_export},
+	//{"unset", handle_unset},
+	//{"env", handle_env},
 	};
 	int is_builtin;
 
@@ -48,7 +119,7 @@ static void	start_with_readline(t_shell *shell)
 		//viene utilizzata per leggere una riga di testo dall'utente. L'argomento "minishell: " è il prompt che verrà mostrato all'utente.
 		if (shell->input && *shell->input) // Aggiungi la shell->input alla cronologia dei comandi (add_history fa parte di readline)
 			add_history(shell->input);
-		shell->command = ft_strtok(shell->input, " ", shell);    //ft_strtok è una funzione che estrae parti di una stringa
+		shell->command = ft_split(shell->input, ' ');    //ft_strtok è una funzione che estrae parti di una stringa
 		//(in questo caso, l'input dell'utente) in base a un delimitatore specificato (in questo caso, lo spazio " ").
 		//La prima chiamata a strtok estrae il primo "token" (in questo caso, il comando) dalla stringa.
 		arg_nb = 0; 
@@ -63,14 +134,7 @@ static void	start_with_readline(t_shell *shell)
 			arg_nb++;
 		}
 		args[arg_nb] = NULL;
-/*
-    Stampa il comando e gli argomenti
-          printf("Comando: %s\n", shell->command);
-          printf("Argomenti:\n");
-          while (++i < arg_nb) 
-              printf("Arg %d: %s\n", i + 1, args[i]);
-*/
-		if (strcmp(shell->command, "cd") == 0)
+		if (strcmp(shell->command[0], "cd") == 0)
 			handle_cd(args, arg_nb, shell);
 		/*
 		Il comando "cd" è un comando interno al sistema operativo che cambia la directory corrente del processo chiamante.
@@ -87,7 +151,7 @@ static void	start_with_readline(t_shell *shell)
 			//corrispondenza, la funzione associata a quel comando verrà chiamata per eseguire l'azione corrispondente.
 			while ((long unsigned int)++i < sizeof(commandFunctions) / sizeof(struct CommandFunction)) 
 			{
-				if (strcmp(commandFunctions[i].commandName, shell->command) == 0) 
+				if (strcmp(commandFunctions[i].commandName, shell->command[0]) == 0) 
 				{
 					commandFunctions[i].functionPtr(args, arg_nb, shell);
 					is_builtin = 1;
@@ -97,7 +161,7 @@ static void	start_with_readline(t_shell *shell)
 		}
 		if (!is_builtin)
 		{
-			char *ext_args[] = {shell->command, 0, NULL};
+			char *ext_args[] = {shell->command[0], shell->command[1], NULL};
 			execute_external_command(ext_args, shell);
 			is_builtin = 0;
 			wait(NULL); //Attendo che il processo figlio completi l'esecuzione prima di tornare al prompt

@@ -37,7 +37,7 @@ typedef struct s_strtok
 
 typedef struct s_shell{
 	char		*input;
-	char		*command;
+	char		**command;
 	int			stdout;
 	int			stdin;
 	t_strtok	strtok;
