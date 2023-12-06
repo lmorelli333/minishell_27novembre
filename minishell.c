@@ -162,7 +162,7 @@ static void	start_with_readline(t_shell *shell)
 		if (!is_builtin)
 		{
 			char *ext_args[] = {shell->command[0], shell->command[1], NULL};
-			execute_external_command(ext_args, shell);
+			execute_external_command(ext_args);
 			is_builtin = 0;
 			wait(NULL); //Attendo che il processo figlio completi l'esecuzione prima di tornare al prompt
 		}

@@ -63,6 +63,6 @@ extern struct CommandFunction	commandFunctions[];
 //Se hai una variabile globale definita in un file
 //sorgente e vuoi utilizzarla in un altro file sorgente, devi dichiararla come extern in questo secondo file.
 
-int execute_external_command(char **args, t_shell *shell);
+int execute_external_command(char **args);
 
 #endif
